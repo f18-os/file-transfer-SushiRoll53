@@ -7,6 +7,8 @@ if len(sys.argv) > 2:
         fileName = sys.argv[2]
         del sys.argv[2]
         del sys.argv[1]
+else:
+	fileName = ""
 sys.path.append("../lib")       # for params
 import params
 
@@ -69,8 +71,8 @@ print("received:", framedReceive(s, debug))
 
 if os.path.isfile(fileName):
     fr = open(fileName,"rb")
-    print("sending numbers.txt")
-    framedSend(s, b"numbers.txt", debug)
+    print("sending ",fileName)
+    framedSend(s, fileName.encode(), debug)
     print("received:", framedReceive(s, debug))
 
     while True:

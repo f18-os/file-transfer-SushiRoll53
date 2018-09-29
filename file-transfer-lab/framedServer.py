@@ -43,7 +43,7 @@ while True:
     fileName = payload.decode()
     if os.path.isfile(fileName):
         print(fileName)
-        with open("server"+fileName,"wb") as file:
+        with open("serverData/"+fileName,"wb") as file:
             print("Opening file...")
             while True:
                 print("receiving data")
