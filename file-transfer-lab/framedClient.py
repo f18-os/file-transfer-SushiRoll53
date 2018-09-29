@@ -72,10 +72,15 @@ print("received:", framedReceive(s, debug))
 if os.path.isfile(fileName):
     fr = open(fileName,"rb")
     print("sending ",fileName)
+    fileName = "NOF$"+fileName
     framedSend(s, fileName.encode(), debug)
-    print("received:", framedReceive(s, debug))
-
-    while True:
+    print("received:", framedReceive(s, debug).decode()[4:])
+    fileInServer = framedReceive(s, debug).decode()
+    sentinel = True
+    if fileInServer == 'FIS$':
+        print("File already in server")
+        sentinel = False
+    while sentinel:
         reading = fr.read(100)
         print(reading)
         while reading:
