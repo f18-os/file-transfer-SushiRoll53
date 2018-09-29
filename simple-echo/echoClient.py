@@ -5,6 +5,29 @@ import socket, sys, re
 sys.path.append("../lib")       # for params
 import params
 
+def parser(message):
+	return "@"+message+"$"
+
+def isIncomplete(message):
+    startingIndex = message.find("@")
+    endingIndex = message.find("$")
+    dataArray = []
+    if startingIndex == -1 or endingIndex == -1:
+        return True
+    else:
+        return False
+
+def dataParser(message):
+    startingIndex = message.find("@")
+    endingIndex = message.find("$")
+    dataArray = []
+    if startingIndex == -1 or endingIndex == -1:
+        return dataArray
+    else:
+        dataArray.append(message[startingIndex+1:endingIndex])
+        dataArray.append(message[endingIndex+1:])
+        return dataArray 
+
 switchesVarDefaults = (
     (('-s', '--server'), 'server', "127.0.0.1:50001"),
     (('-?', '--usage'), "usage", False), # boolean (set if present)
@@ -52,21 +75,37 @@ if s is None:
 
 outMessage = "Hello world!"
 
-print("sending '%s'" % outMessage)
-s.send(outMessage.encode())
+while len(outMessage):
+    print("sending '%s'" % outMessage)
+    outMessage = parser(outMessage)
+    bytesSent = s.send(outMessage.encode())
+    outMessage = outMessage[bytesSent:]
 
-data = s.recv(1024).decode()
-print("Received '%s'" % data)
+#data = s.recv(1024).decode()
+#print("Received '%s'" % data)
 
-print("sending '%s'" % outMessage)
-s.send(outMessage.encode())
+outMessage = "Hello world!"
+while len(outMessage):
+    print("sending '%s'" % outMessage)
+    outMessage = parser(outMessage)
+    bytesSent = s.send(outMessage.encode())
+    outMessage = outMessage[bytesSent:]
 
 s.shutdown(socket.SHUT_WR)      # no more output
-
+data = ""
 while 1:
-    data = s.recv(1024).decode()
-    print("Received '%s'" % data)
-    if len(data) == 0:
-        break
+	while isIncomplete(data):
+		data = data+s.recv(1024).decode()
+		if len(data) == 0:
+			break
+	if len(data) == 0:
+		print("Zero length read, nothing to send, terminating")
+		break
+	dataArray = dataParser(data)
+	data = dataArray[0]
+	print("Received '%s'" % data)
+	if len(data) == 0:
+		break
+	data = dataArray[1]
 print("Zero length read.  Closing")
 s.close()
